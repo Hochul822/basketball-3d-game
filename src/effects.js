@@ -147,7 +147,7 @@ export class Trail {
       fragmentShader: `uniform vec3 uColor; uniform vec3 uColor2; uniform float uFade; varying float vT; varying float vSide;
         void main(){
           float edge = 1.0 - abs(vSide * 2.0 - 1.0);
-          float a = pow(1.0 - vT, 1.5) * uFade * (0.35 + 0.65 * smoothstep(0.0, 0.6, edge));
+          float a = pow(clamp(1.0 - vT, 0.0, 1.0), 1.5) * clamp(uFade, 0.0, 1.0) * (0.35 + 0.65 * smoothstep(0.0, 0.6, clamp(edge, 0.0, 1.0)));
           vec3 c = mix(uColor, uColor2, vT);
           gl_FragColor = vec4(c * a, a);
         }`,
@@ -200,7 +200,9 @@ export class Trail {
       const tan = this._a.subVectors(pr, n);
       if (tan.lengthSq() < 1e-8) tan.set(0, 1, 0);
       const view = this._b.subVectors(cam, p);
-      const side = this._c.crossVectors(tan, view).normalize();
+      const side = this._c.crossVectors(tan, view);
+      const sl = side.length();
+      if (!(sl > 1e-6)) side.set(1, 0, 0); else side.divideScalar(sl);
       const w = this.width * (1 - i / this.len * 0.85);
       this.posArr[i * 6] = p.x + side.x * w; this.posArr[i * 6 + 1] = p.y + side.y * w; this.posArr[i * 6 + 2] = p.z + side.z * w;
       this.posArr[i * 6 + 3] = p.x - side.x * w; this.posArr[i * 6 + 4] = p.y - side.y * w; this.posArr[i * 6 + 5] = p.z - side.z * w;

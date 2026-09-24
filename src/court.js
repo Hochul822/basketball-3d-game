@@ -333,7 +333,7 @@ export class Court {
       pole.position.set(x, 4, z);
       this.group.add(pole);
       const armDir = new THREE.Vector3(-x, 0, 4 - z).normalize();
-      const head = toonMesh(new RoundedBoxGeometry(0.9, 0.22, 0.45, 2, 0.06), poleMat, { outline: 0.012 });
+      const head = toonMesh(new RoundedBoxGeometry(0.9, 0.22, 0.45, 2, 0.06), poleMat, { outline: 0.012, cast: false });
       head.position.set(x + armDir.x * 0.6, 8.05, z + armDir.z * 0.6);
       head.lookAt(head.position.x + armDir.x, 8.05, head.position.z + armDir.z);
       this.group.add(head);

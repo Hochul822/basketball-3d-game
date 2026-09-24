@@ -51,7 +51,7 @@ export class Tutorial {
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
       uniforms: { uColor: { value: col } },
       vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-      fragmentShader: 'uniform vec3 uColor; varying vec2 vUv; void main(){ float a = pow(1.0 - vUv.y, 2.0) * 0.45; gl_FragColor = vec4(uColor * a, a); }',
+      fragmentShader: 'uniform vec3 uColor; varying vec2 vUv; void main(){ float k = clamp(1.0 - vUv.y, 0.0, 1.0); float a = k * k * 0.45; gl_FragColor = vec4(uColor * a, a); }',
     }));
     beam.position.y = 1.5;
     this.marker.add(ring, beam);
