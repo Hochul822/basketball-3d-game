@@ -11,6 +11,7 @@ import { Audio } from './audio.js';
 import { Input } from './input.js';
 import { UI } from './ui.js';
 import { Game } from './game.js';
+import { Tutorial } from './tutorial.js';
 import './style.css';
 
 const params = new URLSearchParams(location.search);
@@ -102,13 +103,51 @@ document.querySelectorAll('[data-diff]').forEach((b) => {
 });
 function startGame(demo = false) {
   audio.init();
+  tutDone.classList.remove('show');
   title.classList.add('hide');
   document.getElementById('over').classList.remove('show');
   document.getElementById('hud').classList.add('show');
   document.body.classList.add('playing');
   game.start(difficulty, demo);
 }
-document.getElementById('start').addEventListener('click', () => startGame(false));
+const TUT_KEY = 'street3on3.tutorialDone';
+function tutorialDone() {
+  try { return localStorage.getItem(TUT_KEY) === '1'; } catch { return false; }
+}
+function markTutorialDone() {
+  try { localStorage.setItem(TUT_KEY, '1'); } catch { /* storage unavailable */ }
+}
+const tutDone = document.getElementById('tut-done');
+function runTutorial() {
+  audio.init();
+  title.classList.add('hide');
+  tutDone.classList.remove('show');
+  document.getElementById('over').classList.remove('show');
+  document.getElementById('hud').classList.add('show');
+  document.body.classList.add('playing');
+  const tut = new Tutorial(game, {
+    isTouch,
+    onFinish: (skipped) => {
+      markTutorialDone();
+      if (skipped) { startGame(false); return; }
+      game.state = 'tutdone';
+      for (const p of game.teams[0].players) if (!p.busy) p.startAction('celebrate');
+      tutDone.classList.add('show');
+    },
+  });
+  game.startTutorial(tut);
+  ui.bigText('TUTORIAL', 'tip');
+}
+document.getElementById('tut-skip').addEventListener('click', () => {
+  if (game.tutorial) game.tutorial.finish(true);
+});
+document.getElementById('tut-play').addEventListener('click', () => startGame(false));
+document.getElementById('tut-menu').addEventListener('click', () => {
+  tutDone.classList.remove('show');
+  document.getElementById('tomenu').click();
+});
+document.getElementById('tutorial').addEventListener('click', () => runTutorial());
+document.getElementById('start').addEventListener('click', () => (tutorialDone() ? startGame(false) : runTutorial()));
 document.getElementById('demo').addEventListener('click', () => startGame(true));
 document.getElementById('again').addEventListener('click', () => startGame(game.demo));
 document.getElementById('tomenu').addEventListener('click', () => {

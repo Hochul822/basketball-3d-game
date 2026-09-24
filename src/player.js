@@ -100,6 +100,7 @@ export class Player {
     a.side = opts.side ?? this.ballHand;
     this.action = a;
     def.start?.(this, a, this.game);
+    this.game.tutorial?.onAction(this, name, a);
     return a;
   }
 

@@ -25,6 +25,7 @@ const DIFF = {
   normal: { react: 0.4, blockReact: 0.2, block: 0.45, steal: 0.42, rebound: 0.75, cpuShot: 1.0, special: 1, aiRelErr: 0.05, userBonus: 1.0 },
   hard: { react: 0.26, blockReact: 0.14, block: 0.6, steal: 0.65, rebound: 0.9, cpuShot: 1.1, special: 1.3, aiRelErr: 0.035, userBonus: 0.93 },
 };
+const TUTORIAL = { react: 0.5, blockReact: 0.3, block: 0, steal: 0, rebound: 0.5, cpuShot: 1.0, special: 0, aiRelErr: 0.05 };
 const TEAMMATE = { react: 0.38, blockReact: 0.2, block: 0.45, steal: 0.4, rebound: 0.75, cpuShot: 1.0, special: 1, aiRelErr: 0.045 };
 
 const DUNKS_BY_SKILL = [
@@ -88,6 +89,7 @@ export class Game {
   }
 
   diffFor(p) {
+    if (this.tutorial && p.team !== this.userTeam) return TUTORIAL;
     if (p.team === this.userTeam && !this.demo) return TEAMMATE;
     return DIFF[this.difficulty];
   }
@@ -102,7 +104,23 @@ export class Game {
     this.ball.give(this.players[0], 'dribble');
   }
 
+  startTutorial(tut) {
+    this.difficulty = 'normal';
+    this.demo = false;
+    for (const t of this.teams) { t.score = 0; t.power = 0.2; }
+    this.tutorial = tut;
+    this.state = 'live';
+    this.stateT = 0;
+    this.clearNeeded = false;
+    this.overtime = false;
+    this.gameClock = 999;
+    this.shotClock = 99;
+    this.cam.cine = null;
+    tut.start();
+  }
+
   start(difficulty = 'normal', demo = false) {
+    if (this.tutorial) { const t = this.tutorial; t.onFinish = null; t.finish(true); }
     this.difficulty = difficulty;
     this.demo = demo;
     for (const t of this.teams) { t.score = 0; t.power = 0.35; }
@@ -185,7 +203,10 @@ export class Game {
     else {
       this.flow(dt);
       if (this.user && !this.demo) this.userControl(dt);
-      for (const p of this.players) if (!p.isUser || this.demo) updateAI(this, p, dt);
+      for (const p of this.players) {
+        if (this.tutorial && this.tutorial.controls(p)) continue;
+        if (!p.isUser || this.demo) updateAI(this, p, dt);
+      }
     }
 
     for (const p of this.players) p.update(dt);
@@ -244,6 +265,7 @@ export class Game {
       return;
     }
     if (s === 'live') {
+      if (this.tutorial) { this.clearNeeded = false; this.shotClock = 99; this.tutorial.update(dt); return; }
       this.gameClock -= dt;
       const h = this.ball.holder;
       if (h || (!this.ball.shot && !this.ball.holder)) this.shotClock -= dt;
@@ -402,7 +424,7 @@ export class Game {
 
   nearestOppDist(p) {
     let bd = 99;
-    for (const o of this.teams[1 - p.team].players) bd = Math.min(bd, distXZ(o.pos, p.pos));
+    for (const o of this.teams[1 - p.team].players) if (!o.parked) bd = Math.min(bd, distXZ(o.pos, p.pos));
     return bd;
   }
 
@@ -410,6 +432,7 @@ export class Game {
     let best = null, bd = maxD;
     p.forward(_u);
     for (const o of this.teams[1 - p.team].players) {
+      if (o.parked) continue;
       const d = distXZ(o.pos, p.pos);
       if (d >= bd) continue;
       if (frontOnly) {
@@ -423,7 +446,7 @@ export class Game {
   }
 
   userPass(u, ax) {
-    const mates = this.teams[u.team].players.filter((p) => p !== u);
+    const mates = this.teams[u.team].players.filter((p) => p !== u && !p.parked);
     let best = null, bs = -1e9;
     const dir = new THREE.Vector3(ax.x, 0, -ax.y);
     const hasDir = dir.lengthSq() > 0.05;
@@ -439,7 +462,7 @@ export class Game {
   }
 
   userOop(u) {
-    const mates = this.teams[u.team].players.filter((p) => p !== u);
+    const mates = this.teams[u.team].players.filter((p) => p !== u && !p.parked);
     let best = null, bs = -1e9;
     for (const m of mates) {
       const s = m.attr.dunk * 3 - distXZ(m.pos, RIM) * 0.3;
@@ -534,6 +557,7 @@ export class Game {
     }
     base *= c;
     const df = this.diffFor(p);
+    if (this.tutorial && p.team === this.userTeam) base = Math.min(0.97, base * 1.3 + 0.1);
     if (p.team !== this.userTeam) base *= df.cpuShot;
     else if (!this.demo) base *= DIFF[this.difficulty].userBonus;
     return clamp(base, 0.03, 0.97);
@@ -565,6 +589,7 @@ export class Game {
     ball.shot = { shooter: p, team: p.team, points: a.three ? 3 : 2, special: !!a.special, t: 0, rimHit: false, boardHit: false, cleared: !this.clearNeeded, make, kind: 'jump' };
     this.audio.whoosh(0.35);
     if (p.isUser && !a.special) this.ui.shotResult(a.timing, a.quality);
+    this.tutorial?.event('shot', { p, make });
     if (a.special) this.supernovaRelease(p, a);
     this.cheerTease(p);
   }
@@ -639,6 +664,7 @@ export class Game {
       // lost the ball (oop miss / rejection)
       return;
     }
+    this.tutorial?.event('dunk', { p, oop: !!a.oop });
     ball.holder = null;
     ball.pos.set(RIM.x + a.dir.x * 0.03, RIM.y + 0.18, RIM.z + a.dir.z * 0.03);
     ball.vel.set(-a.dir.x * 0.3, -8.5, -a.dir.z * 0.3);
@@ -672,6 +698,7 @@ export class Game {
     const d = distXZ(p.pos, RIM);
     const def = this.nearestOpp(p, 2.6, true);
     team.power = 0;
+    this.tutorial?.event('special', { p });
     this.audio.charge();
     this.effects.screen.flash = 0.5;
     this.effects.screen.tint.setRGB(1.2, 0.85, 0.6);
@@ -1105,20 +1132,21 @@ export class Game {
       else p.startAction('pickup');
     }
     this.audio.catch_();
+    this.tutorial?.event('catch', { p, pass: !!(wasPass && wasPass.to === p && p.team === wasPass.from.team) });
     p.ai.expectPass = false;
     p.ai.decision = null;
     p.ai.think = 0.25;
     // possession
     if (p.team !== prevTeam) {
       this.offense = p.team;
-      this.clearNeeded = true;
+      this.clearNeeded = !this.tutorial;
       this.shotClock = 12;
       if (wasPass && wasPass.from.team !== p.team && ball.freeT < 1.2) {
         this.ui.bigText('INTERCEPTED!', 'steal');
         this.addPower(p.team, 0.08);
         this.audio.cheer(0.6);
       } else if (shot) this.ui.popText('REBOUND', p);
-      if (p.team === this.userTeam) this.ui.message('CLEAR THE BALL! · 3점 라인 밖으로', 1.6);
+      if (p.team === this.userTeam && !this.tutorial) this.ui.message('CLEAR THE BALL! · 3점 라인 밖으로', 1.6);
       // reassign defensive matchups
       this.assignDefense(1 - p.team);
       if (!this.demo) this.setUser(p.team === this.userTeam ? p : this.closestTo(this.teams[this.userTeam].players, p.pos));
@@ -1156,6 +1184,17 @@ export class Game {
     if (this.state !== 'live') {
       this.court.kickNet(1.5);
       this.audio.swish();
+      return;
+    }
+    if (this.tutorial) {
+      const s = ball.shot;
+      this.court.kickNet(s && s.dunk ? 3 : 1.6);
+      this.audio.swish();
+      this.court.boardGlow = 1;
+      if (!(s && s.dunk)) this.ui.bigText(s && !s.rimHit && !s.boardHit ? 'SWISH!' : 'BUCKET!', 'score');
+      this.effects.confetti(new THREE.Vector3(RIM.x, RIM.y + 0.3, RIM.z + 0.5), 50);
+      ball.shot = { ...(s || {}), scored: true };
+      this.tutorial.event('score', { shot: s });
       return;
     }
     const s = ball.shot;

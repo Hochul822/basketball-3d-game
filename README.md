@@ -41,6 +41,9 @@ URL options:
 
 On touch devices you get a virtual joystick and on-screen buttons.
 
+### Tutorial
+The first time you press PLAY, a tutorial starts automatically. It teaches movement, sprinting, the five dribble moves, jump shots, layups and dunks, passing, alley-oops, steals, blocks and special moves in 14 steps. The `Skip tutorial` button in the bottom right jumps straight into a game, and you can replay the tutorial anytime from the title screen's **Tutorial** button. (Whether you've finished it is stored in the browser's localStorage.)
+
 ### Special moves (full STREET POWER gauge)
 - **METEOR SLAM**: a long-range flying windmill 360° dunk. Includes slow motion, a flaming ball, lightning, a floor shockwave and crack, and knocks nearby defenders down.
 - **ANKLE BREAKER**: a three-move combo (crossover, behind-the-back, crossover) with afterimages. The nearest defender falls.
@@ -67,6 +70,7 @@ The gauge fills from made baskets, dunks, ankle breakers, steals and blocks.
 | `src/effects.js` | GPU particles, ribbon trails, shockwaves, lightning, afterimages, screen FX (chromatic aberration, zoom blur, speed lines) |
 | `src/toon.js` | Cel-shading material with a rim light, and inverted-hull outlines |
 | `src/court.js` | Street court at dusk: graffiti wall, chain-link fence, street lights, city skyline, crowd, physics-driven net |
+| `src/tutorial.js` | Step-by-step tutorial (court setup, completion checks, drills, ball reset) |
 | `src/audio.js` | All sound effects and the boom-bap BGM, synthesized with Web Audio |
 
 No external assets: every texture, model and sound is generated procedurally.

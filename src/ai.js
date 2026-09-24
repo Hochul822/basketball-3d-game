@@ -22,7 +22,7 @@ function faceRim(p) { p.faceTowards(RIM.x, RIM.z); }
 export function openness(g, p) {
   let best = 99;
   for (const o of g.teams[1 - p.team].players) {
-    if (o.stun > 0.3) continue;
+    if (o.stun > 0.3 || o.parked) continue;
     const d = distXZ(o.pos, p.pos);
     // defenders between player and rim count more
     _v.set(RIM.x - p.pos.x, 0, RIM.z - p.pos.z).normalize();
@@ -142,7 +142,7 @@ function offenseHandler(g, p, dt) {
   // pass
   let best = null, bestScore = -9;
   for (const tm of g.teams[p.team].players) {
-    if (tm === p) continue;
+    if (tm === p || tm.parked) continue;
     let s = openness(g, tm) - distXZ(tm.pos, p.pos) * 0.05;
     if (tm.cutting && distXZ(tm.pos, RIM) < 4.5) s += 1.4;
     for (const o of g.teams[1 - p.team].players) {

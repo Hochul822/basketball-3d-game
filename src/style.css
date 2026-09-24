@@ -188,3 +188,38 @@ body.touch .controls { display: none; }
   .powers { margin-top: 4px; }
   #msg { top: 84px; }
 }
+
+/* ---------- tutorial ---------- */
+.menu .row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+body.tut .board, body.tut #poss, body.tut .power.t1, body.tut #helpbtn { display: none; }
+#tut { position: fixed; inset: 0; pointer-events: none; z-index: 7; display: none; }
+#tut.show { display: block; }
+.tut-card { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 32px)); background: rgba(14, 10, 24, .9); border: 3px solid var(--ink); outline: 2px solid #ffd23f; border-radius: 16px; padding: 12px 18px 14px; box-shadow: 6px 6px 0 var(--ink); }
+.tut-card.enter { animation: tutIn .45s cubic-bezier(.2,1.6,.4,1); }
+@keyframes tutIn { from { transform: translateX(-50%) translateY(-14px) scale(.94); } }
+.tut-card.ok { outline-color: #7dff6b; box-shadow: 6px 6px 0 var(--ink), 0 0 30px rgba(125,255,107,.6); }
+.tut-card.ok .tut-title::after { content: ' ✓'; color: #7dff6b; }
+.tut-top { display: flex; align-items: baseline; gap: 12px; }
+.tut-step { font-family: var(--comic); letter-spacing: 3px; font-size: 14px; color: #ffd23f; }
+.tut-title { font-family: var(--kr); font-size: 26px; color: #fff; text-shadow: 2px 2px 0 #000; }
+.tut-text { margin: 6px 0 10px; font-size: 15px; line-height: 1.55; color: #eee; text-wrap: pretty; }
+.tut-keys { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tut-keys kbd { font-family: var(--comic); font-size: 20px; letter-spacing: 2px; padding: 4px 14px 2px; background: #ffd23f; color: var(--ink); border: 3px solid var(--ink); border-radius: 9px; box-shadow: 0 4px 0 var(--ink); animation: keyPulse 1.1s ease-in-out infinite; }
+.tut-keys .plus { font-family: var(--comic); font-size: 20px; color: #ffd23f; }
+@keyframes keyPulse { 50% { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); } }
+.tut-extra { margin: 8px 0 0; font-size: 13px; color: #ff9a6a; min-height: 0; }
+.tut-extra:empty { display: none; }
+.tut-bar { margin-top: 12px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.12); overflow: hidden; }
+.tut-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ff6a1a, #ffd23f, #7dff6b); transition: width .4s; }
+#tut-skip { pointer-events: auto; position: fixed; right: 16px; bottom: 16px; font-family: var(--kr); font-size: 15px; padding: 10px 18px; border-radius: 30px; border: 2px solid rgba(255,255,255,.5); background: rgba(0,0,0,.55); color: #fff; }
+#tut-skip:hover, #tut-skip:focus-visible { background: rgba(255,210,63,.9); color: var(--ink); outline: none; }
+body.touch #tut-skip { top: 16px; right: 16px; bottom: auto; font-size: 13px; padding: 6px 12px; }
+body.touch .tut-card { top: 8px; width: min(460px, calc(100vw - 180px)); padding: 8px 12px 10px; }
+body.touch .tut-text { font-size: 13px; margin: 4px 0 6px; }
+#tut-done { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: rgba(7,6,28,.6); backdrop-filter: blur(4px); z-index: 12; opacity: 0; pointer-events: none; transition: opacity .4s; text-align: center; padding-inline: 16px; }
+#tut-done.show { opacity: 1; pointer-events: auto; }
+#tut-done .result { font-family: var(--comic); font-size: clamp(56px, 11vw, 140px); line-height: .9; letter-spacing: 5px; background: linear-gradient(180deg, #fff 10%, #7dff6b 50%, #1f9e5a); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 5px var(--ink); paint-order: stroke fill; filter: drop-shadow(8px 8px 0 var(--ink)); transform: rotate(-4deg); }
+#tut-done p { font-family: var(--kr); font-size: 18px; margin: 0; text-shadow: 2px 2px 0 #000; }
+#tut-done .btns { display: flex; gap: 16px; align-items: center; }
+body.tut #hud { inset: auto 0 16px 0; }
+body.tut #hud .powers { flex-direction: column-reverse; }

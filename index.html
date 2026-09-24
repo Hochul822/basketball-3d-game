@@ -51,7 +51,10 @@
           <button data-diff="hard">HARD</button>
         </div>
         <button id="start" class="go">PLAY</button>
-        <button id="demo" class="ghost">CPU 관전 모드</button>
+        <div class="row">
+          <button id="tutorial" class="ghost">튜토리얼</button>
+          <button id="demo" class="ghost">CPU 관전 모드</button>
+        </div>
       </div>
       <div class="controls">
         <div><b>WASD / 방향키</b> 이동 · <b>Shift</b> 스프린트</div>
@@ -76,6 +79,25 @@
         <tr><td>P / Esc · M</td><td>일시정지 · 음악 On/Off</td></tr>
       </table>
       <p>규칙: 21점 선취(또는 4분). 3점 라인 안 2점, 밖 3점. 공격권이 바뀌면 먼저 3점 라인 밖으로 <b>CLEAR</b> 해야 득점 인정. 샷클락 12초.</p>
+    </div>
+
+    <div id="tut">
+      <div class="tut-card">
+        <div class="tut-top"><span class="tut-step">STEP 1</span><span class="tut-title"></span></div>
+        <p class="tut-text"></p>
+        <div class="tut-keys"></div>
+        <p class="tut-extra"></p>
+        <div class="tut-bar"><i></i></div>
+      </div>
+      <button id="tut-skip">튜토리얼 건너뛰기 ›</button>
+    </div>
+    <div id="tut-done">
+      <div class="result">TRAINING<br />COMPLETE</div>
+      <p>기본기를 모두 익혔어요. 이제 코트의 왕이 될 차례!</p>
+      <div class="btns">
+        <button id="tut-play" class="go">게임 시작</button>
+        <button id="tut-menu" class="ghost">메뉴</button>
+      </div>
     </div>
 
     <div id="pause">
