@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Street 3ON3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="board">
+        <div class="team t0"><span id="name0" class="tname"></span><span id="score0" class="score">0</span></div>
+        <div class="mid">
+          <div id="clock">4:00</div>
+          <div id="shotclock">12</div>
+        </div>
+        <div class="team t1"><span id="score1" class="score">0</span><span id="name1" class="tname"></span></div>
+      </div>
+      <div class="powers">
+        <div id="power0" class="power t0"><div class="fill"></div><span>STREET POWER</span></div>
+        <div id="poss" class="poss"></div>
+        <div id="power1" class="power t1"><div class="fill"></div><span>STREET POWER</span></div>
+      </div>
+      <div id="ready">SPECIAL READY · <b>SPACE</b></div>
+      <button id="helpbtn" title="조작법 (H)">?</button>
+    </div>
+    <div id="msg"></div>
+    <div id="big"></div>
+    <div id="special"></div>
+    <div id="pops"></div>
+    <div id="meter"><div class="fill"></div><div class="mark"></div></div>
+    <div id="timing" class="timing"></div>
+    <div id="wipe"></div>
+
+    <!-- Title -->
+    <div id="title">
+      <div class="logo">
+        <div class="kicker">STREET BASKETBALL</div>
+        <h1 data-text="STREET 3ON3">STREET 3ON3</h1>
+        <div class="sub">길거리 농구 · 21점 선취 매치</div>
+      </div>
+      <div class="menu">
+        <div class="diff">
+          <button data-diff="easy">EASY</button>
+          <button data-diff="normal" class="sel">NORMAL</button>
+          <button data-diff="hard">HARD</button>
+        </div>
+        <button id="start" class="go">PLAY</button>
+        <button id="demo" class="ghost">CPU 관전 모드</button>
+      </div>
+      <div class="controls">
+        <div><b>WASD / 방향키</b> 이동 · <b>Shift</b> 스프린트</div>
+        <div><b>J</b> 슛(꾹 눌렀다 정점에서 떼기) · 골밑에선 레이업/덩크 · 수비 시 블록</div>
+        <div><b>K</b> 패스(방향키로 대상 선택) · 수비 시 스틸 · <b>L</b> 앨리웁</div>
+        <div><b>Q</b> 크로스오버 · <b>R</b> 비하인드 백 · <b>C</b> 레그스루 · <b>E</b> 스핀무브 · <b>F</b> 스텝백</div>
+        <div><b>SPACE</b> 스페셜 기술 (게이지 MAX) · <b>Tab</b> 수비수 전환 · <b>P</b> 일시정지 · <b>M</b> 음악</div>
+      </div>
+    </div>
+
+    <div id="help">
+      <h3>조작법</h3>
+      <table>
+        <tr><td>WASD / 방향키</td><td>이동</td></tr>
+        <tr><td>Shift</td><td>스프린트</td></tr>
+        <tr><td>J</td><td>점프슛 (꾹 → 점프 정점에서 떼면 PERFECT) / 골밑 돌파 중 레이업·덩크 / 수비: 블록</td></tr>
+        <tr><td>K</td><td>패스 (방향 입력으로 대상 선택) / 수비: 스틸</td></tr>
+        <tr><td>L</td><td>앨리웁 패스</td></tr>
+        <tr><td>Q / R / C / E / F</td><td>크로스오버 / 비하인드 백 / 레그스루 / 스핀무브 / 스텝백</td></tr>
+        <tr><td>SPACE</td><td>스페셜: 골밑 근처 <b>METEOR SLAM</b> · 수비 붙으면 <b>ANKLE BREAKER</b> · 외곽 오픈 <b>SUPERNOVA SHOT</b> · 수비 시 <b>PICKPOCKET / SKY WALL</b></td></tr>
+        <tr><td>Tab</td><td>조작 선수 전환</td></tr>
+        <tr><td>P / Esc · M</td><td>일시정지 · 음악 On/Off</td></tr>
+      </table>
+      <p>규칙: 21점 선취(또는 4분). 3점 라인 안 2점, 밖 3점. 공격권이 바뀌면 먼저 3점 라인 밖으로 <b>CLEAR</b> 해야 득점 인정. 샷클락 12초.</p>
+    </div>
+
+    <div id="pause">
+      <h2>PAUSED</h2>
+      <button id="resume" class="go">RESUME</button>
+    </div>
+
+    <div id="over">
+      <div class="result">YOU WIN!</div>
+      <div class="final">21 : 15</div>
+      <div class="btns">
+        <button id="again" class="go">REMATCH</button>
+        <button id="tomenu" class="ghost">MENU</button>
+      </div>
+    </div>
+
+    <!-- touch controls -->
+    <div id="touch">
+      <div id="stick"><div id="stick-knob"></div></div>
+      <div class="btns">
+        <button data-act="shoot" class="b-shoot">SHOOT<small>BLOCK</small></button>
+        <button data-act="pass" class="b-pass">PASS<small>STEAL</small></button>
+        <button data-act="oop" class="b-oop">OOP</button>
+        <button data-act="cross" class="b-cross">CROSS</button>
+        <button data-act="spin" class="b-spin">SPIN</button>
+        <button data-act="behind" class="b-behind">BEHIND</button>
+        <button data-act="stepback" class="b-step">STEP</button>
+        <button data-act="sprint" class="b-sprint">RUN</button>
+        <button data-act="special" class="b-special">SP</button>
+        <button data-act="switch" class="b-switch">⇄</button>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
