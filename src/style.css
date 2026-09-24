@@ -178,3 +178,13 @@ body.touch .controls { display: none; }
   #msg { font-size: 15px; top: 110px; }
   .cutin span { font-size: 44px; }
 }
+@media (max-height: 460px) {
+  #touch .btns { transform: scale(.78); transform-origin: bottom right; }
+  #stick { transform: scale(.8); transform-origin: bottom left; }
+  .board { margin-top: 6px; }
+  .board .score { font-size: 30px; }
+  .board .tname { font-size: 16px; }
+  #clock { font-size: 20px; }
+  .powers { margin-top: 4px; }
+  #msg { top: 84px; }
+}

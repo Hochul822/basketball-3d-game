@@ -120,7 +120,8 @@ export class Rig {
     return toonMat(color, { rim: 0.3, ...extra });
   }
 
-  add(parent, geo, mat, pos, { outline = 0.011, rot, cast = true, scale } = {}) {
+  add(parent, geo, mat, pos, { outline = 0.011, rot, cast, scale } = {}) {
+    if (cast === undefined) cast = outline === 0 || outline >= 0.008;
     const m = new THREE.Mesh(geo, mat);
     if (pos) m.position.set(pos[0], pos[1], pos[2]);
     if (rot) m.rotation.set(rot[0], rot[1], rot[2]);

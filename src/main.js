@@ -59,6 +59,7 @@ const input = new Input();
 const ui = new UI(camera);
 const game = new Game({ scene, camera, court, effects, audio, ui, input });
 window.__game = game;
+window.__renderer = renderer;
 
 // ---- post processing ----
 const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: quality === 'high' ? 4 : 0 });

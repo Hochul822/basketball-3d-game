@@ -315,6 +315,14 @@ export class Game {
       u.move.set(ax.x, 0, -ax.y);
     }
     if (this.state === 'check' && u.hasBall) u.move.set(0, 0, 0);
+    const bp = this.ball.pass;
+    if (bp && bp.to === u && !this.ball.holder && !bp.lob && u.move.lengthSq() < 0.05) {
+      // receive assist: step toward the incoming pass
+      this.ball.predict(Math.min(0.35, distXZ(this.ball.pos, u.pos) / 12), _v);
+      const dx = _v.x - u.pos.x, dz = _v.z - u.pos.z, dl = Math.hypot(dx, dz);
+      if (dl > 0.3) u.move.set(dx / dl * 0.7, 0, dz / dl * 0.7);
+      u.faceTowards(this.ball.pos.x, this.ball.pos.z);
+    }
     u.sprint = inp.isDown('sprint');
     const moving = u.move.lengthSq() > 0.04;
     const hasBall = u.hasBall;
@@ -493,7 +501,7 @@ export class Game {
   onShotStart(p, a) {
     a.startPos = p.pos.clone();
     a.three = isThree(p.pos);
-    if (p.isUser && a.name === 'shoot') this.ui.shotMeter(a);
+    if (p.isUser && a.name === 'shoot' && !a.special) this.ui.shotMeter(a);
   }
 
   shotProbability(p, kind, a) {
@@ -556,7 +564,7 @@ export class Game {
     ball.spinRate = 14;
     ball.shot = { shooter: p, team: p.team, points: a.three ? 3 : 2, special: !!a.special, t: 0, rimHit: false, boardHit: false, cleared: !this.clearNeeded, make, kind: 'jump' };
     this.audio.whoosh(0.35);
-    if (p.isUser) this.ui.shotResult(a.timing, a.quality);
+    if (p.isUser && !a.special) this.ui.shotResult(a.timing, a.quality);
     if (a.special) this.supernovaRelease(p, a);
     this.cheerTease(p);
   }
@@ -592,14 +600,14 @@ export class Game {
       this.effects.shockwave(new THREE.Vector3(p.pos.x, 0.05, p.pos.z), { color: 0xff7a1a, radius: 3.5, life: 0.5 });
       this.ballTrail.setColors(0xffd070, 0xff2a00, 3.5);
       this.ballTrail.start(this.ball.pos);
-      this.ball.setGlow(0xff6a10, 1.2);
+      this.ball.setGlow(0xff6a10, 0.7);
       this.audio.charge();
     }
   }
 
   onDunkFlight(p, a, s) {
     if (a.type === 'meteor') {
-      this.effects.fire(this.ball.pos, 4, 1.3);
+      this.effects.fire(this.ball.pos, 3, 1.0);
       this.effects.aura(p.pos, 0xff6a10, 3, 0.45, 2.2);
       if (Math.random() < 0.2) this.effects.lightning(this.ball.pos.clone(), this.ball.pos.clone().add(new THREE.Vector3(rand(-1.5, 1.5), rand(0.5, 2), rand(-1.5, 1.5))), 0xffc060, 0.15);
       if (s > 0.55 && !a.apexSlow) { a.apexSlow = true; this.slow(0.22, 0.45); this.effects.screen.speed = 1; this.effects.screen.zoom = 0.6; }
@@ -668,7 +676,7 @@ export class Game {
     this.effects.screen.flash = 0.5;
     this.effects.screen.tint.setRGB(1.2, 0.85, 0.6);
     this.effects.screen.tintAmt = 0.5;
-    if (d < 7.2) {
+    if (d < 4.5 || (!def && d < 7.2)) {
       const side = p.pos.x >= 0 ? 'R' : 'L';
       p.startAction('dunk', { type: 'meteor', side, special: true });
       this.ui.special('METEOR SLAM', p.team);
@@ -935,17 +943,32 @@ export class Game {
     const d = distXZ(p.pos, r.pos);
     const T = clamp(d / 13.5, 0.22, 0.85);
     const tgt = new THREE.Vector3(r.pos.x + r.vel.x * T * 0.8, 1.25 * r.S, r.pos.z + r.vel.z * T * 0.8);
-    if (a.bounce && d > 3) {
-      const F = new THREE.Vector3().lerpVectors(ball.pos, tgt, 0.58);
-      F.y = BALL_R;
-      ball.launchTo(F, T * 0.62);
-    } else ball.launchTo(tgt, T);
+    if (a.bounce && d > 3) this.launchBounce(tgt);
+    else ball.launchTo(tgt, T);
     ball.spinAxis.set(0, 1, 0);
     ball.spinRate = 4;
     ball.pass = { from: p, to: r, t: 0, checked: new Set() };
     ball.shot = null;
     // control follows the ball for the user team
     if (p.isUser) this.setUser(r);
+  }
+
+  /** Solve a bounce pass that hits the floor at 60% of the way and rises to chest height. */
+  launchBounce(tgt) {
+    const ball = this.ball;
+    const D = distXZ(ball.pos, tgt);
+    const y0 = ball.pos.y, r = BALL_R, g = BALL_G;
+    let best = null, be = 1e9;
+    for (let v = 6; v <= 16; v += 0.25) {
+      const t1 = (0.6 * D) / v, t2 = (0.4 * D) / (0.9 * v);
+      const vyImp = (r - y0) / t1 - 0.5 * g * t1;
+      const need = -(tgt.y - r + 0.5 * g * t2 * t2) / (0.74 * t2);
+      const e = Math.abs(vyImp - need);
+      if (e < be) { be = e; best = { v, t1 }; }
+    }
+    const F = new THREE.Vector3().lerpVectors(ball.pos, tgt, 0.6);
+    F.y = r;
+    ball.launchTo(F, best.t1);
   }
 
   // -------------------------------------------------------------------------
@@ -1044,7 +1067,8 @@ export class Game {
       const S = p.S;
       const horiz = distXZ(p.pos, ball.pos);
       const isTarget = ball.pass && ball.pass.to === p;
-      let reachR = isTarget ? 0.85 : 0.55;
+      let reachR = isTarget ? 1.0 : 0.55;
+      if (isTarget && ball.pos.distanceTo(p.chestPos(_u)) < 1.05) { best = p; bd = -1; break; }
       const lo = p.pos.y + 0.05, hi = p.pos.y + p.reach + (p.airborne ? 0.15 : -0.3);
       let ok = false;
       if (ball.pos.y > lo && ball.pos.y < hi && horiz < reachR) ok = true;

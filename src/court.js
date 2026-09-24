@@ -437,22 +437,22 @@ export class Court {
       const shirt = toonMat(shirts[(Math.random() * shirts.length) | 0]);
       const pants = toonMat([0x1f2937, 0x374151, 0x1e3a8a][(Math.random() * 3) | 0]);
       const sc = 0.9 + Math.random() * 0.2;
-      const legs = toonMesh(new THREE.CapsuleGeometry(0.13, 0.7, 4, 8), pants, { outline: 0.012 });
+      const legs = toonMesh(new THREE.CapsuleGeometry(0.13, 0.7, 4, 8), pants, { outline: 0, cast: false });
       legs.position.y = 0.48;
       legs.scale.set(1.2, 1, 0.9);
       g.add(legs);
-      const torso = toonMesh(new THREE.CapsuleGeometry(0.2, 0.42, 4, 10), shirt, { outline: 0.012 });
+      const torso = toonMesh(new THREE.CapsuleGeometry(0.2, 0.42, 4, 10), shirt, { outline: 0.012, cast: false });
       torso.position.y = 1.22;
       torso.scale.set(1.05, 1, 0.75);
       g.add(torso);
-      const head = toonMesh(new THREE.SphereGeometry(0.13, 14, 10), skin, { outline: 0.01 });
+      const head = toonMesh(new THREE.SphereGeometry(0.13, 14, 10), skin, { outline: 0, cast: false });
       head.position.y = 1.72;
       g.add(head);
       const arms = [];
       for (const s of [-1, 1]) {
         const pivot = new THREE.Group();
         pivot.position.set(s * 0.26, 1.48, 0);
-        const arm = toonMesh(new THREE.CapsuleGeometry(0.055, 0.55, 4, 8), shirt, { outline: 0.008 });
+        const arm = toonMesh(new THREE.CapsuleGeometry(0.055, 0.55, 4, 8), shirt, { outline: 0, cast: false });
         arm.position.y = -0.3;
         pivot.add(arm);
         g.add(pivot);
