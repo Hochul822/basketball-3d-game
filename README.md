@@ -4,6 +4,16 @@ A 3D street-basketball game with toon shading, built with Three.js. Two teams of
 
 ## Running it
 
+### Quickest: a single HTML file
+Download **`street-3on3.html`** from the repo root and double-click it. It opens in your browser and runs as-is, with no server or install.
+(Everything, including Three.js, is inlined in that one file. Without an internet connection only the Google Fonts are missing, and the game still plays normally.)
+
+To regenerate the file after changing the code:
+```bash
+npm run build:single   # → street-3on3.html (also dist/street-3on3.html)
+```
+
+### Development server
 ```bash
 npm install
 npm run dev      # development server (http://localhost:5173)
